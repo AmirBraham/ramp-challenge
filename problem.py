@@ -1,20 +1,23 @@
 import rampwf as rw
-
-import pandas as pd
 from pathlib import Path
-
 from sklearn.model_selection import StratifiedShuffleSplit
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.metrics import accuracy_score
+import numpy as np
 
-problem_title = 'Template RAMP kit to create data challenges'
+problem_title = 'Road Accident Severity Prediction'
 
-_prediction_label_names = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+_prediction_label_names = [1, 2, 3, 4]
 
-# A type (class) which will be used to create wrapper objects for y_pred
 Predictions = rw.prediction_types.make_multiclass(
     label_names=_prediction_label_names
 )
 
-# An object implementing the workflow
 workflow = rw.workflows.Estimator()
 
 score_types = [
