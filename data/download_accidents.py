@@ -4,46 +4,97 @@ import os
 import urllib.request
 import ssl
 import sys
+import pandas as pd
+
+
+def download_file(url, output_file, context):
+    """
+    Download a file from a URL and save it to the specified path
+    """
+    try:
+        with urllib.request.urlopen(url, context=context) as response:
+            data = response.read()
+            
+            with open(output_file, 'wb') as file:
+                file.write(data)
+            print("Successfully downloaded to", output_file)
+            return True
+    except Exception as e:
+        print(f"Error downloading {output_file}: {e}", file=sys.stderr)
+        print("\nTry downloading manually:")
+        print(f"curl -o {output_file} '{url}'")
+        return False
+
+
+def read_csv_safely(file_path):
+    """
+    Read a CSV file with different encodings and separators
+    """
+    encodings = ['utf-8', 'latin1', 'iso-8859-1']
+    separators = [',', ';']
+    
+    for encoding in encodings:
+        for sep in separators:
+            try:
+                return pd.read_csv(
+                    file_path,
+                    encoding=encoding,
+                    sep=sep,
+                    low_memory=False
+                )
+            except Exception:
+                continue
+    
+    raise ValueError(
+        f"Could not read {file_path} with any combination of "
+        "encoding and separator"
+    )
 
 
 def download_data():
     """
-    Download the CSV file from the data.gouv.fr website
+    Download the CSV files from data.gouv.fr website
     """
-    # URL of the CSV file
-    url = ("https://www.data.gouv.fr/fr/datasets/r/"
-           "6af37c98-0933-4ae4-8380-5f63212fb52a")
+    # URLs and filenames for the different datasets
+    base_url = "https://www.data.gouv.fr/fr/datasets/r"
+    datasets = {
+        'usagers': {
+            'url': f"{base_url}/68848e2a-28dd-4efc-9d5f-d512f7dbe66f",
+            'filename': "usagers-2023.csv"
+        },
+        'vehicules': {
+            'url': f"{base_url}/146a42f5-19f0-4b3e-a887-5cd8fbef057b",
+            'filename': "vehicules-2023.csv"
+        },
+        'lieux': {
+            'url': f"{base_url}/8bef19bf-a5e4-46b3-b5f9-a145da4686bc",
+            'filename': "lieux-2023.csv"
+        },
+        'caracteristiques': {
+            'url': f"{base_url}/104dbb32-704f-4e99-a71e-43563cb604f2",
+            'filename': "caract-2023.csv"
+        }
+    }
     
-    # Define the output file path
-    output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
-                               "accidents_data.csv")
+    # Create SSL context that ignores certificate verification
+    context = ssl._create_unverified_context()
     
-    print(f"Downloading data from {url}...")
+    # Create data directory if it doesn't exist
+    data_dir = os.path.dirname(os.path.abspath(__file__))
     
-    try:
-        # Create an SSL context that ignores certificate verification
-        # Note: This is not recommended for production use but can help bypass 
-        # SSL issues
-        context = ssl._create_unverified_context()
+    # Download all files
+    success = True
+    downloaded_files = []
+    
+    for dataset_type, info in datasets.items():
+        output_file = os.path.join(data_dir, info['filename'])
+        print(f"\nDownloading {dataset_type} data...")
+        print(f"URL: {info['url']}")
         
-        # Use urllib.request.urlopen with the SSL context
-        with urllib.request.urlopen(url, context=context) as response:
-            data = response.read()
-            
-            # Write the data to a file
-            with open(output_file, 'wb') as file:
-                file.write(data)
-                
-        print(f"Data successfully downloaded to {output_file}")
-    except Exception as e:
-        print(f"Error downloading the file: {e}", file=sys.stderr)
-        print("\nAlternative download methods:")
-        print("1. Try downloading manually and placing in the data directory")
-        print("2. Use curl or wget from the command line:")
-        print(f"   curl -o data/accidents_data.csv '{url}'")
-        return 1
-    
-    return 0
+        if download_file(info['url'], output_file, context):
+            downloaded_files.append(output_file)
+        else:
+            success = False
 
 
 if __name__ == "__main__":
