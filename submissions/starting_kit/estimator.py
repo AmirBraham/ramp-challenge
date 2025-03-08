@@ -13,28 +13,33 @@ class RandomPredictor(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
         self.classes_ = None
         self.n_classes_ = None
+        # The expected class labels for the challenge
+        self.label_names = [1, 2, 3, 4]
         self.rng = np.random.RandomState(self.random_state)
 
     def fit(self, X, y):
-        # Just store the classes
+        # Store the classes from the training data
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
         return self
 
     def predict(self, X):
-        # Generate random predictions
+        # Generate random predictions using the expected classes
         if self.classes_ is None:
             raise ValueError("Estimator not fitted yet.")
         n_samples = X.shape[0]
-        return self.rng.choice(self.classes_, size=n_samples)
+        return self.rng.choice(self.label_names, size=n_samples)
 
     def predict_proba(self, X):
-        # Generate random probabilities
+        # Generate random probabilities for the 4 expected classes
         if self.classes_ is None:
             raise ValueError("Estimator not fitted yet.")
         n_samples = X.shape[0]
-        # Generate random probabilities that sum to 1 for each sample
-        probas = self.rng.rand(n_samples, self.n_classes_)
+        
+        # Generate probabilities for the 4 classes: [1, 2, 3, 4]
+        n_classes = 4
+        probas = self.rng.rand(n_samples, n_classes)
+        # Normalize to make each row sum to 1
         probas = probas / probas.sum(axis=1, keepdims=True)
         return probas
 
