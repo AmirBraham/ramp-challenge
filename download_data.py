@@ -4,6 +4,7 @@ import os
 import urllib.request
 import ssl
 import sys
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
@@ -146,15 +147,79 @@ def prepare_data(data_files):
     # Merge with characteristics data
     df = df.merge(caract_df, on="Num_Acc", how="left")
 
-    # Handle duplicate column names from merges
-    df = df.loc[:, ~df.columns.duplicated()]
-
     print(f"Full merged dataset shape before filtering: {df.shape}")
 
     # Remove rows with invalid 'grav' values (-1)
     print(f"Number of rows with grav=-1: {(df['grav'] == -1).sum()}")
     df = df[df['grav'].isin([1, 2, 3, 4])]
     print(f"Dataset shape after filtering out invalid grav values: {df.shape}")
+    
+    
+    # Creating the 'securite' column: 1 if any of the 'secu1', 'secu2', or 'secu3' values are greater than 0, otherwise 0
+    df["securite"] = ((df["secu1"] > 0) | (df["secu2"] > 0) | (df["secu3"] > 0)).astype(int)
+
+    # Creating the 'age' column by subtracting the birth year from the current year (2023)
+    current_year = 2023 
+    df['age'] = current_year - df['an_nais']
+
+    # Dropping unnecessary columns if they exist in the dataframe
+    cols_to_drop = ["num_veh", "an", "dep", "v2", "pr", "pr1", "id_usager", "id_vehicule", 
+                    "Num_Acc", "secu2", "secu3", "secu1", "an_nais"]
+    df.drop(columns=[col for col in cols_to_drop if col in df.columns], inplace=True)
+
+    # Filling missing values in 'adr' with corresponding values from 'voie', then dropping 'voie'
+    df["adr"].fillna(df["voie"], inplace=True)
+    df.drop(columns=["voie"], inplace=True)
+
+    # Filling remaining missing values in 'adr' with the most frequent value (mode)
+    mode_adr = df["adr"].mode()[0]
+    df["adr"].fillna(mode_adr, inplace=True)
+
+    # Dropping additional unnecessary columns
+    df.drop(columns=["occutc", "lartpc"], axis=1, inplace=True)
+
+    # Filling missing values in 'age' with the mean age
+    df["age"].fillna(df["age"].mean(), inplace=True)
+
+    # Converting 'nbv' column to string format for further manipulation
+    df["nbv"] = df["nbv"].astype(str)
+
+    # Replacing "-1" and "#VALEURMULTI" with NaN values in 'nbv'
+    df["nbv"] = df["nbv"].replace({"-1": np.nan, "#VALEURMULTI": np.nan})
+
+    # Converting non-numeric values in 'nbv' to NaN
+    df["nbv"] = pd.to_numeric(df["nbv"], errors='coerce')
+    median_value = df["nbv"].median()
+    # Filling NaN values in 'nbv' with the computed median
+    df["nbv"].fillna(median_value, inplace=True)
+    df["nbv"] = df["nbv"].astype(int)
+    df["actp"] = df["actp"].astype(str)
+
+    # Replacing specific values "-1" and "B" with NaN in 'actp'
+    df["actp"] = df["actp"].replace({"-1": np.nan, "B": np.nan})
+    # Converting 'actp' to numeric values, ignoring errors to avoid issues with non-numeric values like "A"
+    df["actp"] = pd.to_numeric(df["actp"], errors='coerce')
+    median_value = df["actp"].median()
+    # Filling NaN values in 'actp' with the computed median
+    df["actp"].fillna(median_value, inplace=True)
+    df["actp"] = df["actp"].astype(int)
+
+    # Dropping redundant vehicle number columns if they exist
+    df.drop(columns=["num_veh_x", "num_veh_y"], inplace=True)
+
+    # Correcting 'larrout' by replacing commas with dots and converting to float
+    df["larrout"] = df["larrout"].str.replace(",", ".").astype(float)
+    # Filling missing values in 'larrout' with its median
+    df["larrout"].fillna(df["larrout"].median(), inplace=True)
+
+    # Extracting hour information from 'hrmn' and converting it to integer
+    df["heure"] = df["hrmn"].str.split(":").str[0].astype(int)
+    # Dropping the original 'hrmn' column after extracting hours
+    df.drop(columns=["hrmn"], inplace=True)
+
+    # Correcting GPS coordinates by replacing commas with dots and converting to float
+    df["lat"] = df["lat"].str.replace(",", ".").astype(float)
+    df["long"] = df["long"].str.replace(",", ".").astype(float)
 
     # First split: 80% private data, 20% public data
     print("Splitting data into train/test sets...")
