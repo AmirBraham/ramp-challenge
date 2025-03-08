@@ -24,19 +24,29 @@ class RandomPredictor(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        # Generate random predictions using the expected classes
-        if self.classes_ is None:
-            raise ValueError("Estimator not fitted yet.")
-        n_samples = X.shape[0]
-        return self.rng.choice(self.label_names, size=n_samples)
+        """Return class labels.
+        
+        The RAMP framework may not use this method directly, 
+        but we implement it correctly for completeness.
+        """
+        # Get the class with highest probability for each sample
+        # +1 because classes are 1-indexed
+        return np.argmax(self.predict_proba(X), axis=1) + 1
 
     def predict_proba(self, X):
-        # Generate random probabilities for the 4 expected classes
+        """Return probability estimates for each class.
+        
+        Returns a 2D array of shape (n_samples, 4) where each row sums to 1.
+        """
+
         if self.classes_ is None:
             raise ValueError("Estimator not fitted yet.")
+        
         n_samples = X.shape[0]
         
-        # Generate probabilities for the 4 classes: [1, 2, 3, 4]
+        # Always return a 2D array with exactly 4 columns (one per class)
+        # The classes are [1, 2, 3, 4] but the columns are 0-indexed
+
         n_classes = 4
         probas = self.rng.rand(n_samples, n_classes)
         # Normalize to make each row sum to 1
