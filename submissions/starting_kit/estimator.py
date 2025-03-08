@@ -38,6 +38,7 @@ class RandomPredictor(BaseEstimator, ClassifierMixin):
         
         Returns a 2D array of shape (n_samples, 4) where each row sums to 1.
         """
+
         if self.classes_ is None:
             raise ValueError("Estimator not fitted yet.")
         
@@ -45,6 +46,7 @@ class RandomPredictor(BaseEstimator, ClassifierMixin):
         
         # Always return a 2D array with exactly 4 columns (one per class)
         # The classes are [1, 2, 3, 4] but the columns are 0-indexed
+
         n_classes = 4
         probas = self.rng.rand(n_samples, n_classes)
         # Normalize to make each row sum to 1
