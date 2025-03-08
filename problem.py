@@ -47,7 +47,7 @@ def load_data(path='.', dataset_file='train.csv', is_public=False):
         data_path = data_path / "public"
 
     # Load the merged dataframe from CSV
-    df = pd.read_csv(data_path / dataset_file)
+    df = pd.read_csv(data_path / dataset_file, low_memory=False)
 
     # Extract target variable
     y = df['grav']
