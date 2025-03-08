@@ -30,6 +30,47 @@ usage.
 Get started on this RAMP with the
 [dedicated notebook](template_starting_kit.ipynb).
 
+
+
+## Data Preparation Tasks
+
+- **Join the Tables**: Combine the four tables using the `Num_Acc` identifier.
+- **Handle Missing Values**: Convert `-1` codes to appropriate missing value representations.
+- **Feature Engineering**:
+  - Calculate age from birth year and accident year.
+  - Extract time features (hour, day of week, month, season).
+  - Create geographic clusters using latitude and longitude.
+  - Derive speed-related features from authorized speed and road characteristics.
+
+## Modeling Approach
+
+- **Problem Type**: Multi-class classification
+- **Potential Algorithms**:
+  - Random Forest
+  - Gradient Boosting
+  - Neural Networks
+  - Support Vector Machines
+- **Evaluation Metrics**:
+  - Accuracy
+  - F1-score (weighted)
+  - Confusion Matrix
+  - ROC-AUC (one-vs-rest)
+- **Considerations**:
+  - Class imbalance (fatal accidents typically less frequent)
+  - Feature importance analysis to identify key risk factors
+
+## Potential Insights
+
+This analysis could help identify:
+
+- High-risk road configurations
+- Weather and visibility conditions associated with severe outcomes
+- Vehicle types and characteristics linked to different injury severities
+- Driver/passenger behaviors that increase accident severity
+- Effectiveness of safety equipment in reducing injury severity
+
+
+
 ### Test a submission
 
 The submissions need to be located in the `submissions` folder. For instance
@@ -51,3 +92,10 @@ ramp-test --help
 
 You can find more information regarding `ramp-workflow` in the
 [dedicated documentation](https://paris-saclay-cds.github.io/ramp-docs/ramp-workflow/stable/using_kits.html)
+
+
+
+## Acknowledgements
+
+Data source: French BAAC (Bulletin d'Analyse des Accidents Corporels) dataset, which records all bodily injury accidents in France.
+
