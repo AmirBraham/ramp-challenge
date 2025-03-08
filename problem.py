@@ -2,13 +2,6 @@ import rampwf as rw
 from pathlib import Path
 from sklearn.model_selection import StratifiedShuffleSplit
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.metrics import accuracy_score
-import numpy as np
 
 problem_title = 'Road Accident Severity Prediction'
 
@@ -33,7 +26,7 @@ def get_cv(X, y):
 def load_data(path='.', dataset_file='train.csv', is_public=False):
     """
     Load a dataset from the specified CSV file.
-    
+
     Parameters:
     -----------
     path: str
@@ -42,38 +35,38 @@ def load_data(path='.', dataset_file='train.csv', is_public=False):
         Name of the CSV file to load
     is_public: bool
         Whether to load from the public directory
-    
+
     Returns:
     --------
     X_df, y: tuple
         Features dataframe and target variable
     """
     data_path = Path(path) / "data"
-    
+
     if is_public:
         data_path = data_path / "public"
-    
+
     # Load the merged dataframe from CSV
     df = pd.read_csv(data_path / dataset_file)
-    
+
     # Extract target variable
     y = df['grav']
-    
+
     # Drop the target column from features
     X_df = df.drop(columns=['grav'])
-    
+
     return X_df, y
 
 
 def get_train_data(path='.'):
     """
     Get the training data
-    
+
     Parameters:
     -----------
     path: str
         Path to the data directory
-    
+
     Returns:
     --------
     X_df, y: tuple
@@ -91,12 +84,12 @@ def get_train_data(path='.'):
 def get_test_data(path='.'):
     """
     Get the test data
-    
+
     Parameters:
     -----------
     path: str
         Path to the data directory
-    
+
     Returns:
     --------
     X_df, y: tuple
