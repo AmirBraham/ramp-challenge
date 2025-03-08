@@ -25,8 +25,7 @@ class RandomPredictor(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         """Return class labels.
-        
-        The RAMP framework may not use this method directly, 
+        The RAMP framework may not use this method directly
         but we implement it correctly for completeness.
         """
         # Get the class with highest probability for each sample
@@ -35,14 +34,14 @@ class RandomPredictor(BaseEstimator, ClassifierMixin):
 
     def predict_proba(self, X):
         """Return probability estimates for each class.
-        
+
         Returns a 2D array of shape (n_samples, 4) where each row sums to 1.
         """
         if self.classes_ is None:
             raise ValueError("Estimator not fitted yet.")
-        
+
         n_samples = X.shape[0]
-        
+
         # Always return a 2D array with exactly 4 columns (one per class)
         # The classes are [1, 2, 3, 4] but the columns are 0-indexed
         n_classes = 4
