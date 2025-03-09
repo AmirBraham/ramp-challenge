@@ -20,3 +20,5 @@ dist/
 *.pkl
 
 .DS_Store
+
+*venv*
