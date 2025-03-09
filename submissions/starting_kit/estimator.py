@@ -35,7 +35,7 @@ class RandomPredictor(BaseEstimator, ClassifierMixin):
         if self.classes_ is None:
             raise ValueError("Estimator not fitted yet.")
         n_samples = X.shape[0]
-        
+
         # Generate probabilities for the 4 classes: [1, 2, 3, 4]
         n_classes = 4
         probas = self.rng.rand(n_samples, n_classes)

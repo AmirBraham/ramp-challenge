@@ -153,25 +153,31 @@ def prepare_data(data_files):
     print(f"Number of rows with grav=-1: {(df['grav'] == -1).sum()}")
     df = df[df['grav'].isin([1, 2, 3, 4])]
     print(f"Dataset shape after filtering out invalid grav values: {df.shape}")
-    
-    
-    # Creating the 'securite' column: 1 if any of the 'secu1', 'secu2', or 'secu3' values are greater than 0, otherwise 0
-    df["securite"] = ((df["secu1"] > 0) | (df["secu2"] > 0) | (df["secu3"] > 0)).astype(int)
 
-    # Creating the 'age' column by subtracting the birth year from the current year (2023)
-    current_year = 2023 
+    # Creating the 'securite' column: 1 if any of the 'secu1', 'secu2',
+    # or 'secu3' values are greater than 0, otherwise 0
+    df["securite"] = ((df["secu1"] > 0) | (df["secu2"] > 0)
+                      | (df["secu3"] > 0)).astype(int)
+
+    # Creating the 'age' column by subtracting birth year from current year
+    current_year = 2023
     df['age'] = current_year - df['an_nais']
 
     # Dropping unnecessary columns if they exist in the dataframe
-    cols_to_drop = ["num_veh", "an", "dep", "v2", "pr", "pr1", "id_usager", "id_vehicule", 
-                    "Num_Acc", "secu2", "secu3", "secu1", "an_nais"]
-    df.drop(columns=[col for col in cols_to_drop if col in df.columns], inplace=True)
+    cols_to_drop = [
+        "num_veh", "an", "dep", "v2", "pr", "pr1", "id_usager",
+        "id_vehicule", "Num_Acc", "secu2", "secu3", "secu1", "an_nais"
+    ]
+    df.drop(
+        columns=[col for col in cols_to_drop if col in df.columns],
+        inplace=True
+    )
 
-    # Filling missing values in 'adr' with corresponding values from 'voie', then dropping 'voie'
+    # Filling missing values in 'adr' with corresponding values from 'voie'
     df["adr"].fillna(df["voie"], inplace=True)
     df.drop(columns=["voie"], inplace=True)
 
-    # Filling remaining missing values in 'adr' with the most frequent value (mode)
+    # Fill remaining missing values in 'adr' with most frequent value
     mode_adr = df["adr"].mode()[0]
     df["adr"].fillna(mode_adr, inplace=True)
 
@@ -185,7 +191,10 @@ def prepare_data(data_files):
     df["nbv"] = df["nbv"].astype(str)
 
     # Replacing "-1" and "#VALEURMULTI" with NaN values in 'nbv'
-    df["nbv"] = df["nbv"].replace({"-1": np.nan, "#VALEURMULTI": np.nan})
+    df["nbv"] = df["nbv"].replace({
+        "-1": np.nan,
+        "#VALEURMULTI": np.nan
+    })
 
     # Converting non-numeric values in 'nbv' to NaN
     df["nbv"] = pd.to_numeric(df["nbv"], errors='coerce')
@@ -197,7 +206,7 @@ def prepare_data(data_files):
 
     # Replacing specific values "-1" and "B" with NaN in 'actp'
     df["actp"] = df["actp"].replace({"-1": np.nan, "B": np.nan})
-    # Converting 'actp' to numeric values, ignoring errors to avoid issues with non-numeric values like "A"
+    # Converting 'actp' to numeric values, ignoring errors
     df["actp"] = pd.to_numeric(df["actp"], errors='coerce')
     median_value = df["actp"].median()
     # Filling NaN values in 'actp' with the computed median
@@ -207,17 +216,17 @@ def prepare_data(data_files):
     # Dropping redundant vehicle number columns if they exist
     df.drop(columns=["num_veh_x", "num_veh_y"], inplace=True)
 
-    # Correcting 'larrout' by replacing commas with dots and converting to float
+    # Fix 'larrout': replace commas with dots and convert to float
     df["larrout"] = df["larrout"].str.replace(",", ".").astype(float)
-    # Filling missing values in 'larrout' with its median
+    # Fill missing values in 'larrout' with its median
     df["larrout"].fillna(df["larrout"].median(), inplace=True)
 
-    # Extracting hour information from 'hrmn' and converting it to integer
+    # Extract hour from 'hrmn' and convert to integer
     df["heure"] = df["hrmn"].str.split(":").str[0].astype(int)
-    # Dropping the original 'hrmn' column after extracting hours
+    # Drop the original 'hrmn' column
     df.drop(columns=["hrmn"], inplace=True)
 
-    # Correcting GPS coordinates by replacing commas with dots and converting to float
+    # Fix GPS coordinates: replace commas with dots and convert to float
     df["lat"] = df["lat"].str.replace(",", ".").astype(float)
     df["long"] = df["long"].str.replace(",", ".").astype(float)
 
